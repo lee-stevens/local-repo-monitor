@@ -18,10 +18,12 @@ Feel free to clone this repo and make any changes that can help with your workst
 
 3. Open [http://localhost:3000](http://localhost:3000).
 
-The app only ever runs `git fetch` and `git status` — it never checks out,
-merges, or modifies any tracked file in your working tree. `git fetch` does
-need write access to each repo's `.git` directory (to update `FETCH_HEAD`,
-objects, and remote-tracking refs), so the volume mount can't be read-only.
+Scanning only ever runs `git fetch` and `git status` - read-only as far as
+your tracked files are concerned. The repo-level **Pull** and **Stash**
+buttons (see below) do modify your working tree, but only when you
+explicitly click them. `git fetch` needs write access to each repo's `.git`
+directory (to update `FETCH_HEAD`, objects, and remote-tracking refs), so
+the volume mount can't be read-only.
 
 ### Private repos
 
@@ -65,11 +67,32 @@ Each immediate subfolder of the root directory that contains a `.git`
 directory is treated as a repo. If the root directory itself is a repo and
 no sub-repos are found, it's scanned directly.
 
+## Repo actions
+
+Click a repo row to expand it and see its staged, unstaged, and untracked
+files individually (not just the total count shown in "Working tree").
+
+Each repo row also has two buttons:
+
+- **Pull** — runs `git pull --ff-only`. Never creates a merge commit or
+  rewrites history; if the branch has diverged or you have conflicting
+  uncommitted changes, it fails with git's own error instead of guessing.
+- **Stash** — runs `git stash push --include-untracked` with a message
+  containing the current timestamp (e.g. `local-repo-monitor
+  2026-10-09T15:54:18.144Z`), so you can find it later with `git stash
+  list` and recover it with `git stash pop` or `git stash apply`. Asks for
+  confirmation first since it changes your working tree, even though it's
+  recoverable.
+
+Both only ever act on a path the server already discovered by scanning -
+never on arbitrary input - and are rejected the same way cross-site
+requests to `/api/scan` are (see below).
+
 ## Security notes
 
 This dashboard has **no login** - anyone who can reach it can see every
-watched repo's branch/status and trigger a rescan. A few things mitigate
-that for the intended "runs on your own machine" use case:
+watched repo's branch/status and trigger a rescan, pull, or stash. A few
+things mitigate that for the intended "runs on your own machine" use case:
 
 - The published port is bound to `127.0.0.1` only (`docker-compose.yml`),
   so it isn't reachable from other devices on your network.

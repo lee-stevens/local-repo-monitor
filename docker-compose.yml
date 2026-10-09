@@ -23,7 +23,7 @@ services:
       - SCAN_INTERVAL_MINUTES=5
       # Tells git inside the container to read credentials from the mounted
       # file instead of prompting (which is disabled) or failing outright.
-      - GIT_CONFIG_COUNT=2
+      - GIT_CONFIG_COUNT=3
       - GIT_CONFIG_KEY_0=credential.helper
       - GIT_CONFIG_VALUE_0=store --file=/run/secrets/git-credentials
       # The container runs as a non-root user, so the bind-mounted repos
@@ -33,4 +33,12 @@ services:
       # safe to tell git not to flag it.
       - GIT_CONFIG_KEY_1=safe.directory
       - GIT_CONFIG_VALUE_1=*
+      # Your host's git normalizes CRLF<->LF on checkout (core.autocrlf, the
+      # usual Windows default). Without the same setting here, the
+      # container's git sees every text file's line endings as "modified"
+      # against the LF blobs - wildly inflating dirty/changedFiles counts
+      # and would make Stash stash non-changes. `input` matches how the
+      # files already exist on disk without rewriting anything on checkout.
+      - GIT_CONFIG_KEY_2=core.autocrlf
+      - GIT_CONFIG_VALUE_2=input
     restart: unless-stopped

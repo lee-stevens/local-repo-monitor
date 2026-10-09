@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
-const { scanRepos } = require('./lib/scanner');
+const { scanRepos, getRepoStatus, pullRepo, stashRepo } = require('./lib/scanner');
 
 const DATA_DIR = path.join(__dirname, 'data');
 const CONFIG_PATH = path.join(DATA_DIR, 'config.json');
@@ -43,7 +43,23 @@ const state = {
   rootError: null,
   scanning: false,
   lastScan: null,
+  notice: null,
 };
+
+// Pull/stash only ever act on a path the server itself already discovered
+// via scanning - never on arbitrary input from the request. This also
+// means a deleted/renamed repo just fails normally rather than opening up
+// an arbitrary-path primitive.
+function findKnownRepo(repoPath) {
+  return state.repos.find((r) => r.path === repoPath);
+}
+
+async function refreshOneRepo(repoPath) {
+  const updated = await getRepoStatus(repoPath);
+  const idx = state.repos.findIndex((r) => r.path === repoPath);
+  if (idx !== -1) state.repos[idx] = updated;
+  return updated;
+}
 
 let timer = null;
 
@@ -104,6 +120,40 @@ app.post('/api/scan', requireSameOrigin, async (req, res) => {
   saveConfig(state);
   await runScan();
   res.json(state);
+});
+
+app.post('/api/repos/pull', requireSameOrigin, async (req, res) => {
+  const { path: repoPath } = req.body || {};
+  const known = findKnownRepo(repoPath);
+  if (!known) return res.status(404).json({ error: 'Unknown repo path' });
+
+  const result = await pullRepo(known.path);
+  const updated = await refreshOneRepo(known.path);
+  state.notice = {
+    repoName: updated.name,
+    action: 'pull',
+    ok: !result.error,
+    message: result.error || 'Pulled latest changes.',
+    at: new Date().toISOString(),
+  };
+  res.json({ repo: updated, notice: state.notice });
+});
+
+app.post('/api/repos/stash', requireSameOrigin, async (req, res) => {
+  const { path: repoPath } = req.body || {};
+  const known = findKnownRepo(repoPath);
+  if (!known) return res.status(404).json({ error: 'Unknown repo path' });
+
+  const result = await stashRepo(known.path);
+  const updated = await refreshOneRepo(known.path);
+  state.notice = {
+    repoName: updated.name,
+    action: 'stash',
+    ok: !result.error,
+    message: result.error || (result.stashed ? `Stashed as "${result.message}"` : 'No local changes to stash.'),
+    at: new Date().toISOString(),
+  };
+  res.json({ repo: updated, notice: state.notice });
 });
 
 app.listen(PORT, () => {
