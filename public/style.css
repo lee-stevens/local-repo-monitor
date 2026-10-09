@@ -1,0 +1,138 @@
+:root {
+  color-scheme: light dark;
+  --fg: #1c1e21;
+  --bg: #fafafa;
+  --muted: #6b7280;
+  --border: #e2e4e8;
+  --ok: #1a7f37;
+  --warn: #9a6700;
+  --bad: #cf222e;
+  --surface: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fg: #e6e8eb;
+    --bg: #15171a;
+    --muted: #9aa1ab;
+    --border: #2d3036;
+    --ok: #3fb950;
+    --warn: #d29922;
+    --bad: #f85149;
+    --surface: #1d2024;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 1.5rem 2rem 3rem;
+  font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.4rem;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.error {
+  color: var(--bad);
+  font-weight: 600;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.25rem 0;
+  flex-wrap: wrap;
+}
+
+.controls label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.controls input {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--fg);
+}
+
+#root-dir {
+  flex: 1;
+  min-width: 14rem;
+}
+
+button {
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--fg);
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--muted);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+th, td {
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.badge-ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); }
+.badge-warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 15%, transparent); }
+.badge-bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 15%, transparent); }
+
+.repo-name {
+  font-weight: 600;
+}
+
+.repo-error {
+  display: block;
+  color: var(--bad);
+  font-size: 0.78rem;
+  margin-top: 0.2rem;
+}

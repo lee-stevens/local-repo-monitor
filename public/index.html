@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Local Repo Monitor</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Local Repo Monitor</h1>
+    <p id="last-scan" class="muted">Scanning...</p>
+  </header>
+
+  <section class="controls">
+    <label for="root-dir">Folder to scan</label>
+    <input id="root-dir" type="text" placeholder="/repos" />
+    <label for="interval">Interval (min)</label>
+    <input id="interval" type="number" min="1" style="width: 4rem" />
+    <button id="scan-btn">Scan now</button>
+  </section>
+
+  <p id="root-error" class="error" hidden></p>
+
+  <table id="repo-table">
+    <thead>
+      <tr>
+        <th>Repo</th>
+        <th>Branch</th>
+        <th>Ahead / Behind</th>
+        <th>Working tree</th>
+        <th>Local branches</th>
+        <th>Checked</th>
+      </tr>
+    </thead>
+    <tbody id="repo-rows"></tbody>
+  </table>
+
+  <p id="empty-state" class="muted" hidden>No git repositories found in this folder.</p>
+
+  <script src="app.js"></script>
+</body>
+</html>

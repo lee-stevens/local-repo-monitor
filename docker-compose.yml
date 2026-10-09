@@ -1,0 +1,36 @@
+services:
+  local-repo-monitor:
+    build: .
+    container_name: local-repo-monitor
+    ports:
+      # Bound to localhost only - this dashboard has no login, so it must
+      # not be reachable from other machines on the network.
+      - "127.0.0.1:3000:3000"
+    volumes:
+      # Point this at the folder containing the repos you want to watch.
+      # NOT mounted read-only: `git fetch` needs to write to .git/FETCH_HEAD,
+      # objects and refs. It never touches your working tree files though -
+      # no checkout, no merge, no changes to tracked files.
+      - D:/Repos:/repos
+      # Persists the chosen folder/interval across container restarts.
+      - ./data:/app/data
+      # Credential file for fetching private repos over HTTPS - see
+      # secrets/.git-credentials.example and the README for setup. Read-only:
+      # the container can use these credentials but never write to the file.
+      - ./secrets/.git-credentials:/run/secrets/git-credentials:ro
+    environment:
+      - ROOT_DIR=/repos
+      - SCAN_INTERVAL_MINUTES=5
+      # Tells git inside the container to read credentials from the mounted
+      # file instead of prompting (which is disabled) or failing outright.
+      - GIT_CONFIG_COUNT=2
+      - GIT_CONFIG_KEY_0=credential.helper
+      - GIT_CONFIG_VALUE_0=store --file=/run/secrets/git-credentials
+      # The container runs as a non-root user, so the bind-mounted repos
+      # (owned by your host user, not that container user) trip git's
+      # ownership-mismatch safety check. We already trust everything under
+      # ROOT_DIR by design - that's the whole premise of this app - so it's
+      # safe to tell git not to flag it.
+      - GIT_CONFIG_KEY_1=safe.directory
+      - GIT_CONFIG_VALUE_1=*
+    restart: unless-stopped

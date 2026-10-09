@@ -1,0 +1,17 @@
+{
+  "name": "local-repo-monitor",
+  "version": "0.1.0",
+  "description": "Lightweight dashboard that scans a local folder for git repos and reports branch/ahead-behind status.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "simple-git": "^4.0.2"
+  }
+}
